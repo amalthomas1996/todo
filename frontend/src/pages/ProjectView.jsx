@@ -3,7 +3,7 @@ import axios from "axios";
 import { useParams } from "react-router-dom";
 
 const ProjectView = () => {
-  const { id } = useParams(); // Get the project ID from the URL
+  const { id } = useParams();
   const [project, setProject] = useState(null);
   const [error, setError] = useState(null);
   const [newTodo, setNewTodo] = useState("");
@@ -11,7 +11,6 @@ const ProjectView = () => {
   const [editDescription, setEditDescription] = useState("");
   const [alert, setAlert] = useState({ message: "", type: "" });
 
-  // Fetch the project and its todos
   useEffect(() => {
     const fetchProject = async () => {
       try {
@@ -28,23 +27,19 @@ const ProjectView = () => {
     fetchProject();
   }, [id]);
 
-  // Handle adding a new todo
   const handleAddTodo = async (e) => {
     e.preventDefault();
     if (!newTodo) return;
 
     try {
-      const response = await axios.post(`http://localhost:5000/api/todo/add`, {
+      const response = await axios.post("http://localhost:5000/api/todo/add", {
         projectId: id,
         description: newTodo,
       });
-
-      // Update the project state with the new todo
       setProject((prev) => ({
         ...prev,
         todos: [...prev.todos, response.data.todo],
       }));
-
       setNewTodo("");
       setAlert({ message: "Todo added successfully!", type: "success" });
     } catch (err) {
@@ -53,21 +48,17 @@ const ProjectView = () => {
     }
   };
 
-  // Handle toggling a todo's status between "complete" and "pending"
   const handleToggleTodoStatus = async (todoId) => {
     try {
-      const updatedTodo = await axios.put(
+      const response = await axios.put(
         `http://localhost:5000/api/todo/toggle-status/${todoId}`
       );
-
-      // Update the project state to reflect the new status
       setProject((prev) => ({
         ...prev,
         todos: prev.todos.map((todo) =>
-          todo._id === todoId ? updatedTodo.data.todo : todo
+          todo._id === todoId ? response.data.todo : todo
         ),
       }));
-
       setAlert({ message: "Todo status updated!", type: "success" });
     } catch (err) {
       console.error("Failed to update todo status", err);
@@ -75,7 +66,6 @@ const ProjectView = () => {
     }
   };
 
-  // Handle deleting a todo
   const handleDeleteTodo = async (todoId) => {
     try {
       await axios.delete(`http://localhost:5000/api/todo/${todoId}`);
@@ -90,27 +80,25 @@ const ProjectView = () => {
     }
   };
 
-  // Handle editing a todo description
   const handleEditTodo = (todoId, description) => {
     setEditingTodo(todoId);
     setEditDescription(description);
   };
 
-  // Handle saving the updated todo description
   const handleSaveTodo = async (todoId) => {
     try {
-      const updatedTodo = await axios.put(
+      const response = await axios.put(
         `http://localhost:5000/api/todo/edit/${todoId}`,
-        { description: editDescription }
+        {
+          description: editDescription,
+        }
       );
-
       setProject((prev) => ({
         ...prev,
         todos: prev.todos.map((todo) =>
-          todo._id === todoId ? updatedTodo.data.todo : todo
+          todo._id === todoId ? response.data.todo : todo
         ),
       }));
-
       setEditingTodo(null);
       setAlert({ message: "Todo updated successfully!", type: "success" });
     } catch (err) {
@@ -119,9 +107,8 @@ const ProjectView = () => {
     }
   };
 
-  // Display error or loading state
   if (error) return <p className="text-red-500">{error}</p>;
-  if (!project) return <p>Loading...</p>; // Show loading while fetching data
+  if (!project) return <p>Loading...</p>;
 
   return (
     <div className="container mx-auto p-8">
@@ -129,11 +116,11 @@ const ProjectView = () => {
 
       {alert.message && (
         <div
-          className={`alert ${
+          className={`p-4 rounded mb-4 ${
             alert.type === "success"
               ? "bg-green-100 text-green-800"
               : "bg-red-100 text-red-800"
-          } p-4 rounded mb-4`}
+          }`}
         >
           {alert.message}
         </div>
@@ -141,7 +128,7 @@ const ProjectView = () => {
 
       <h2 className="text-lg mt-4">Todos:</h2>
       <div className="space-y-4">
-        {project.todos && project.todos.length > 0 ? (
+        {project.todos.length > 0 ? (
           project.todos.map((todo) => (
             <div
               key={todo._id}
@@ -173,49 +160,61 @@ const ProjectView = () => {
                   </span>
                 )}
               </div>
-
-              <div className="flex items-center space-x-2">
+              Here's the continuation and completion of the `ProjectView.jsx`
+              code, ensuring todo editing is functional and properly styled:
+              ```javascript
+              <div className="flex items-center">
                 {editingTodo === todo._id ? (
-                  <button
-                    onClick={() => handleSaveTodo(todo._id)}
-                    className="text-blue-600 hover:text-blue-800"
-                  >
-                    Save
-                  </button>
+                  <>
+                    <button
+                      onClick={() => handleSaveTodo(todo._id)}
+                      className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={() => setEditingTodo(null)}
+                      className="ml-2 text-red-500 hover:text-red-600"
+                    >
+                      Cancel
+                    </button>
+                  </>
                 ) : (
-                  <button
-                    onClick={() => handleEditTodo(todo._id, todo.description)}
-                    className="text-yellow-600 hover:text-yellow-800"
-                  >
-                    Edit
-                  </button>
+                  <>
+                    <button
+                      onClick={() => handleEditTodo(todo._id, todo.description)}
+                      className="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDeleteTodo(todo._id)}
+                      className="ml-2 text-red-500 hover:text-red-600"
+                    >
+                      Delete
+                    </button>
+                  </>
                 )}
-                <button
-                  onClick={() => handleDeleteTodo(todo._id)}
-                  className="text-red-600 hover:text-red-800"
-                >
-                  Delete
-                </button>
               </div>
             </div>
           ))
         ) : (
-          <p>No todos available</p>
+          <p className="text-gray-500">No todos available</p>
         )}
       </div>
 
-      <form onSubmit={handleAddTodo} className="mt-4 flex">
+      <form onSubmit={handleAddTodo} className="mt-6">
         <input
           type="text"
           value={newTodo}
           onChange={(e) => setNewTodo(e.target.value)}
-          placeholder="Enter new todo"
-          className="border border-gray-300 p-2 rounded w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Add a new todo"
+          className="border border-gray-300 p-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
           required
         />
         <button
           type="submit"
-          className="bg-blue-500 text-white font-semibold py-2 px-4 rounded hover:bg-blue-600 ml-2"
+          className="bg-blue-500 text-white font-semibold py-2 px-4 rounded mt-2 hover:bg-blue-600"
         >
           Add Todo
         </button>

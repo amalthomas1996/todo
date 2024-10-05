@@ -1,21 +1,20 @@
-
-import React, { useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function Signup() {
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('/api/auth/register', { username, email, password });
-      navigate('/login');
+      await axios.post("/api/auth/register", { username, email, password });
+      navigate("/login");
     } catch (error) {
-      console.error('Signup failed', error.response?.data);
+      console.error("Signup failed", error.response?.data);
     }
   };
 

@@ -1,22 +1,25 @@
-
-import React, { useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const { data } = await axios.post('/api/auth/login', { email, password });
-      localStorage.setItem('token', data.token);
-      navigate('/');
+      const { data } = await axios.post("/api/auth/login", { email, password });
+      localStorage.setItem("token", data.token);
+      navigate("/");
     } catch (error) {
-      console.error('Login failed', error.response?.data);
+      console.error("Login failed", error.response?.data);
     }
+  };
+
+  const handleSignUp = () => {
+    navigate("/signup"); // Redirect to the signup page
   };
 
   return (
@@ -44,6 +47,13 @@ function Login() {
           className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-700"
         >
           Login
+        </button>
+        <button
+          type="button" // Button type as "button" to prevent form submission
+          onClick={handleSignUp} // Navigate to the sign-up page
+          className="w-full bg-green-500 text-white p-2 rounded hover:bg-green-700 mt-4"
+        >
+          Sign Up
         </button>
       </form>
     </div>
