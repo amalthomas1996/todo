@@ -1,25 +1,40 @@
-
 const express = require('express');
-const connectDB = require('./config/db');
 const dotenv = require('dotenv');
 const cors = require('cors');
+const connectDB = require('./config/db');
 
+// Routes
+const authRoutes = require('./routes/auth');
+const projectRoutes = require('./routes/project');
+const todoRoutes = require('./routes/todo');
+const githubRoutes = require('./routes/github');
+
+// Load environment variables
 dotenv.config();
 
+// Initialize express app
 const app = express();
-app.use(express.json());
-app.use(cors());
 
+// Middleware
+app.use(express.json()); // Parse incoming JSON
+app.use(cors()); // Enable CORS
+
+// Connect to MongoDB
 connectDB();
 
-// Import Routes
-const authRoutes = require('./routes/auth');
-const todoRoutes = require('./routes/todo');
+// Define routes
+app.use('/api/auth', authRoutes); // Authentication routes
+app.use('/api/projects', projectRoutes); // Project routes
+app.use('/api/todos', todoRoutes); // Todo routes
+app.use('/api/github', githubRoutes); // GitHub gist routes
 
-// Use Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/todo', todoRoutes);
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.message);
+  res.status(500).send('Server Error');
+});
 
+// Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
