@@ -1,6 +1,7 @@
+// Path: frontend/src/components/ProjectView.jsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 const ProjectView = () => {
   const { id } = useParams();
@@ -10,12 +11,22 @@ const ProjectView = () => {
   const [editingTodo, setEditingTodo] = useState(null);
   const [editDescription, setEditDescription] = useState("");
   const [alert, setAlert] = useState({ message: "", type: "" });
+  const navigate = useNavigate();
 
+  // Fetch project details and todos
   useEffect(() => {
     const fetchProject = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/login"); // Redirect if not authenticated
+        return;
+      }
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/projects/${id}`
+          `http://localhost:5000/api/projects/${id}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
         );
         setProject(response.data);
       } catch (err) {
@@ -25,17 +36,27 @@ const ProjectView = () => {
     };
 
     fetchProject();
-  }, [id]);
+  }, [id, navigate]);
 
+  // Add a new todo
   const handleAddTodo = async (e) => {
     e.preventDefault();
+    const token = localStorage.getItem("token");
+    if (!token) return setError("You must be logged in to add todos");
+
     if (!newTodo) return;
 
     try {
-      const response = await axios.post("http://localhost:5000/api/todo/add", {
-        projectId: id,
-        description: newTodo,
-      });
+      const response = await axios.post(
+        "http://localhost:5000/api/todo/add",
+        {
+          projectId: id,
+          description: newTodo,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       setProject((prev) => ({
         ...prev,
         todos: [...prev.todos, response.data.todo],
@@ -48,10 +69,18 @@ const ProjectView = () => {
     }
   };
 
+  // Toggle todo status (complete/incomplete)
   const handleToggleTodoStatus = async (todoId) => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
     try {
       const response = await axios.put(
-        `http://localhost:5000/api/todo/toggle-status/${todoId}`
+        `http://localhost:5000/api/todo/toggle-status/${todoId}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
       );
       setProject((prev) => ({
         ...prev,
@@ -66,9 +95,15 @@ const ProjectView = () => {
     }
   };
 
+  // Delete todo
   const handleDeleteTodo = async (todoId) => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
     try {
-      await axios.delete(`http://localhost:5000/api/todo/${todoId}`);
+      await axios.delete(`http://localhost:5000/api/todo/${todoId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setProject((prev) => ({
         ...prev,
         todos: prev.todos.filter((todo) => todo._id !== todoId),
@@ -80,17 +115,25 @@ const ProjectView = () => {
     }
   };
 
+  // Edit todo
   const handleEditTodo = (todoId, description) => {
     setEditingTodo(todoId);
     setEditDescription(description);
   };
 
+  // Save edited todo
   const handleSaveTodo = async (todoId) => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
     try {
       const response = await axios.put(
         `http://localhost:5000/api/todo/edit/${todoId}`,
         {
           description: editDescription,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
       setProject((prev) => ({
@@ -160,9 +203,6 @@ const ProjectView = () => {
                   </span>
                 )}
               </div>
-              Here's the continuation and completion of the `ProjectView.jsx`
-              code, ensuring todo editing is functional and properly styled:
-              ```javascript
               <div className="flex items-center">
                 {editingTodo === todo._id ? (
                   <>

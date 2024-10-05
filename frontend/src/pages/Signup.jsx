@@ -6,15 +6,21 @@ function Signup() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("/api/auth/register", { username, email, password });
-      navigate("/login");
+      await axios.post("http://localhost:5000/api/auth/register", {
+        username,
+        email,
+        password,
+      });
+      navigate("/");
     } catch (error) {
       console.error("Signup failed", error.response?.data);
+      setErrorMessage(error.response?.data?.message || "Signup failed");
     }
   };
 
@@ -22,6 +28,7 @@ function Signup() {
     <div className="min-h-screen flex items-center justify-center">
       <form onSubmit={handleSubmit} className="bg-white p-8 shadow-md rounded">
         <h2 className="text-2xl font-bold mb-6 text-center">Signup</h2>
+        {errorMessage && <p className="text-red-500 mb-4">{errorMessage}</p>}
         <input
           type="text"
           value={username}

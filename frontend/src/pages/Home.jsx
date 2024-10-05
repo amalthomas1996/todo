@@ -1,17 +1,28 @@
+// Path: frontend/src/components/Home.jsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Home = () => {
   const [projects, setProjects] = useState([]);
   const [error, setError] = useState(null);
   const [newProjectTitle, setNewProjectTitle] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const navigate = useNavigate(); // For navigation after login
 
   useEffect(() => {
     const fetchProjects = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
       try {
-        const response = await axios.get("http://localhost:5000/api/projects");
+        const response = await axios.get("http://localhost:5000/api/projects", {
+          headers: {
+            Authorization: `Bearer ${token}`, // Attach token
+          },
+        });
         setProjects(response.data);
       } catch (err) {
         console.error("Failed to fetch projects", err);
@@ -19,15 +30,26 @@ const Home = () => {
       }
     };
     fetchProjects();
-  }, []);
+  }, [navigate]);
 
   const handleCreateProject = async (e) => {
     e.preventDefault();
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setError("You must be logged in to add a project");
+      return;
+    }
     try {
-      const response = await axios.post("http://localhost:5000/api/projects", {
-        title: newProjectTitle,
-      });
-      setProjects([...projects, response.data.project]);
+      const response = await axios.post(
+        "http://localhost:5000/api/projects",
+        { name: newProjectTitle },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setProjects([...projects, response.data]);
       setNewProjectTitle("");
       setSuccessMessage("Project created successfully!");
     } catch (err) {
